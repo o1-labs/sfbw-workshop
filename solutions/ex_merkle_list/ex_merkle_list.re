@@ -2,6 +2,12 @@ module Universe = (val Snarky_universe.default());
 open! Universe.Impl;
 open! Universe;
 
+/* This SNARK will prove membership 32 elements back in a hash chain.
+
+See [here](https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Hashlink_timestamping.svg/600px-Hashlink_timestamping.svg.png)
+for an image of a hash chain */
+
+/* Our witness is a list of hashes */
 module Witness = {
   let length = 32;
 
@@ -12,18 +18,23 @@ module Witness = {
     type t = array(Hash.Constant.t);
   };
 
+  /* This "typ" is just a value representing the type of the witness. */
   let typ = Typ.array(~length, Hash.typ);
 };
 
-let input = InputSpec.[(module Field), (module Field)];
+/* Our statement consists of two field elements:
+   1. The root hash of a merkle list/hash chain.
+   2. The field element which is "buried" 32 elements back in the merkle list. */
+let statement = InputSpec.[(module Hash), (module Field)];
 
 /* Proves that there is a path [hn, ..., h1] such that
-   hash (h1, hash(h2, hash(h3, ..., hash(hn, x) ... ))) = root */
-let main = (path: Witness.t, supposed_root, x, ()) => {
-  let actual_root =
-    Array.fold_left((acc, h) => Hash.hash([|h, acc|]), x, path);
-
-  Hash.assertEqual(actual_root, supposed_root);
+   hash (h1, hash(h2, hash(h3, ..., hash(hn, x) ... ))) = supposedRoot */
+let main = (path: Witness.t, supposedRoot, x, ()) => {
+  let acc = ref(x);
+  for (i in 0 to Array.length(path) - 1) {
+    acc := Hash.hash([| path[i], acc^ |]);
+  }
+  Hash.assertEqual(acc^, supposedRoot);
 };
 
-InputSpec.run_main(input, (module Witness), main);
+runMain(statement, (module Witness), main);
