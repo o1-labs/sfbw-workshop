@@ -3,7 +3,7 @@ const Snarky = require("snarkyjs");
 const snarky = new Snarky("./ex_merkle_tree.exe");
 
 const depth = 8;
-const numElts = 1 << depth;
+const numElts = Math.pow(2, depth);
 const data = []
 
 for (let i = 0; i < numElts; ++i) {
@@ -18,36 +18,32 @@ const tree = bn128.MerkleTree.ofArray(hashElt, defaultElt, data);
 
 const root = bn128.MerkleTree.root(tree);
 const indexToProve = 17;
-const proof = bn128.MerkleTree.MembershipProof.create(tree, indexToProve);
-
-console.log(root);
-console.log(data[indexToProve]);
-console.log(bn128.MerkleTree.MembershipProof.check(proof, root, hashElt(data[indexToProve])));
+const merkleProof = bn128.MerkleTree.MembershipProof.create(tree, indexToProve);
 
 const statement = [
   /* Root hash */
-  bn128.Field.toString(root),
+  root,
   /* Data */
-  bn128.Field.toString(data[indexToProve])
+  data[indexToProve]
 ];
 
 snarky.prove({
   statement: statement,
   witness: [
-    proof.index,
-    proof.path.map(bn128.Field.toString)
+    merkleProof.index,
+    merkleProof.path
   ]
-}).then(function(proof) {
+}).then((proof) => {
   console.log("Created proof:\n" + proof + "\n");
   return snarky.verify({
     statement: statement,
     proof: proof
   });
-}, console.log).then(function(verified) {
+}, console.log).then((verified) => {
   console.log("Was the proof verified? " + verified);
   if (verified) {
     process.exit(0);
   } else {
     process.exit(1);
   }
-}, function() { process.exit(1); });
+},() => { process.exit(1); });
