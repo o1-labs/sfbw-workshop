@@ -1,14 +1,19 @@
+/* If autocomplete and typechecking is not working, run 
+
+  npm install && npm run build
+*/
+
 module Universe = (val Snarky_universe.default());
 open! Universe.Impl;
 open! Universe;
 
 let depth = 8;
 
-/* Hint: Hover over MerkleTree.MembershipProof to see what function it has */
-module Foo = MerkleTree.MembershipProof;
-
+/* We'll represent peoples' ages using Field elements. */
 module Age = Field;
 
+/* You can ignore the internals of this module. It is defining a "Byte" as
+an array of 8 booleans. */
 module Byte = {
   type t = array(Bool.t);
   module Constant = {
@@ -25,6 +30,8 @@ module Byte = {
   };
 };
 
+/* You can ignore the internals of this module. It is defining a "Color"
+a tuple of 3 bytes (red, green, blue). */
 module Color = {
   [@deriving yojson]
   type triple('a) = ('a, 'a, 'a);
@@ -86,6 +93,11 @@ let checkOver30 = (age : Age.t) => {
     Integer.(>)(Integer.ofBits(bits), Integer.ofInt(30)));
 };
 
+/* In this example we'll use built-in merkle tree membership proofs.
+
+The most important function is "check". Hover over it to see its type.
+*/
+let _ = MerkleTree.MembershipProof.check;
 
 /* Main should:
 - check that the person is over 30
