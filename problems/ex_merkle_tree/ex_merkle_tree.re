@@ -1,3 +1,8 @@
+/* If autocomplete and typechecking is not working, run 
+
+  npm install && npm run build
+*/
+
 module Universe = (val Snarky_universe.default());
 open! Universe.Impl;
 open! Universe;
