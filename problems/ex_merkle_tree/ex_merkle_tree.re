@@ -9,6 +9,10 @@ image and article helpful: https://en.wikipedia.org/wiki/Merkle_tree#/media/File
 let depth = 8;
 
 module Witness = {
+  /* Merkle membership proof:
+  - an array of bools giving the address of the element
+  - the array of hashes hanging off the path to that element
+  */
   type t = (array(Bool.t), array(Hash.t));
 
   module Constant = {
